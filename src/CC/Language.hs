@@ -42,7 +42,8 @@ type Setting = (Option, Bool)
 -- | (Potentially partial) configuration.
 type Config = Map Option Bool
 
--- | Plain types correspond to the fixed-point of the object language type.
+-- | Plain types correspond to the fixed-point of the object language
+--   type constructor.
 newtype Fix f = Fix { unFix :: f (Fix f) }
 
 -- | Denotational semantics.
@@ -72,5 +73,11 @@ configure c (Chc t l r) =
   where l' = configure c l
         r' = configure c r
 
-semantics :: (Tag t, Obj e) => CC t e -> Semantics e
-semantics = undefined
+-- | Convert an expression without choices into a plain expression.
+toPlain :: (Show t, Obj e) => CC t e -> Fix e
+toPlain (Obj e) = Fix (mapCC toPlain e)
+toPlain e       = error $ "toPlain: not plain: " ++ show e
+
+-- | Compute the denotational semantics.
+semantics :: (Show t, Tag t, Obj e) => CC t e -> Semantics e
+semantics e = Map.fromList [(c, toPlain (configure c e)) | c <- configs e]
