@@ -60,8 +60,6 @@ instance Show a => Obj (Tree a) where
 -- * Plain Types
 --
 
-newtype Fix f = Fix { unFix :: f (Fix f) }
-
 type None'   = Fix None
 type One'  a = Fix (One a)
 type List' a = Fix (List a)

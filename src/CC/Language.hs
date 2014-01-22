@@ -40,8 +40,11 @@ type Setting = (Option, Bool)
 -- | (Potentially partial) configuration.
 type Config = Map Option Bool
 
+-- | Plain types correspond to the fixed-point of the object language type.
+newtype Fix f = Fix { unFix :: f (Fix f) }
+
 -- | Denotational semantics.
--- type Semantics a = Map Config a
+type Semantics e = Map Config (Fix e)
 
 class Tag t where
   tagOpts :: t -> Set Option
@@ -59,3 +62,6 @@ partial c (Chc t l r) =
       Right b -> if b then l' else r'
   where l' = partial c l
         r' = partial c r
+
+semantics :: (Tag t, Obj e) => CC t e -> Semantics e
+semantics = undefined
