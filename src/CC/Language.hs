@@ -9,6 +9,8 @@ import qualified Data.Map as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+import Text.Parsec.String (Parser)
+
 
 --
 -- * Syntax
@@ -20,13 +22,14 @@ data CC t e =
   | Chc t (CC t e) (CC t e)
 
 class Obj e where
-  mapCC   :: (CC t e -> b) -> e (CC t e) -> e b
-  foldCC  :: (CC t e -> b -> b) -> b -> e (CC t e) -> b
-  showObj :: Show t => e (CC t e) -> String
+  mapCC    :: (CC t e -> a) -> e (CC t e) -> e a
+  foldCC   :: (CC t e -> a -> a) -> a -> e (CC t e) -> a
+  showObj  :: Tag t => e (CC t e) -> String
+  parseObj :: Parser (e a)
 
-instance (Show t, Obj e) => Show (CC t e) where
+instance (Tag t, Obj e) => Show (CC t e) where
   show (Obj e)     = showObj e
-  show (Chc t l r) = show t ++ "<" ++ show l ++ "," ++ show r ++ ">"
+  show (Chc t l r) = showTag t ++ "<" ++ show l ++ "," ++ show r ++ ">"
 
 
 --
@@ -50,8 +53,10 @@ newtype Fix f = Fix { unFix :: f (Fix f) }
 type Semantics e = Map Config (Fix e)
 
 class Tag t where
-  tagOpts :: t -> Set Option
-  resolve :: Config -> t -> Either t Bool
+  tagOpts  :: t -> Set Option
+  resolve  :: Config -> t -> Either t Bool
+  showTag  :: t -> String
+  parseTag :: Parser t
 
 -- | The set of all configuration options referred to in an expression.
 options :: (Tag t, Obj e) => CC t e -> Set Option
@@ -74,10 +79,10 @@ configure c (Chc t l r) =
         r' = configure c r
 
 -- | Convert an expression without choices into a plain expression.
-toPlain :: (Show t, Obj e) => CC t e -> Fix e
+toPlain :: (Tag t, Obj e) => CC t e -> Fix e
 toPlain (Obj e) = Fix (mapCC toPlain e)
 toPlain e       = error $ "toPlain: not plain: " ++ show e
 
 -- | Compute the denotational semantics.
-semantics :: (Show t, Tag t, Obj e) => CC t e -> Semantics e
+semantics :: (Tag t, Obj e) => CC t e -> Semantics e
 semantics e = Map.fromList [(c, toPlain (configure c e)) | c <- configs e]
