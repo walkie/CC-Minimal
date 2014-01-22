@@ -50,18 +50,20 @@ class Tag t where
   tagOpts :: t -> Set Option
   resolve :: Config -> t -> Either t Bool
 
+-- | The set of all configuration options referred to in an expression.
 options :: (Tag t, Obj e) => CC t e -> Set Option
 options (Obj e) = foldCC (Set.union . options) Set.empty e
 options (Chc t l r) = Set.unions [tagOpts t, options l, options r]
 
-partial :: (Tag t, Obj e) => Config -> CC t e -> CC t e
-partial c (Obj e)     = Obj (mapCC (partial c) e)
-partial c (Chc t l r) =
+-- | Apply a (potentially partial) configuration to an expression.
+configure :: (Tag t, Obj e) => Config -> CC t e -> CC t e
+configure c (Obj e)     = Obj (mapCC (configure c) e)
+configure c (Chc t l r) =
     case resolve c t of
       Left t' -> Chc t' l' r'
       Right b -> if b then l' else r'
-  where l' = partial c l
-        r' = partial c r
+  where l' = configure c l
+        r' = configure c r
 
 semantics :: (Tag t, Obj e) => CC t e -> Semantics e
 semantics = undefined
