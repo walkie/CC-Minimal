@@ -27,9 +27,12 @@ class Obj e where
   showObj  :: Tag t => e (CC t e) -> String
   parseObj :: Parser (e a)
 
+showCC :: (Tag t, Obj e) => CC t e -> String
+showCC (Obj e)     = showObj e
+showCC (Chc t l r) = showTag t ++ "<" ++ showCC l ++ "," ++ showCC r ++ ">"
+
 instance (Tag t, Obj e) => Show (CC t e) where
-  show (Obj e)     = showObj e
-  show (Chc t l r) = showTag t ++ "<" ++ show l ++ "," ++ show r ++ ">"
+  show = showCC
 
 
 --
