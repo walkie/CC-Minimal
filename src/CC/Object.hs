@@ -4,7 +4,7 @@ module CC.Object where
 import CC.Language
 
 --
--- * Some Object Languages
+-- * Some Simple Object Languages
 --
 
 data One a b = One a
@@ -54,3 +54,33 @@ instance Show a => Obj (Tree a) where
   
   showObj (Leaf a)     = show a
   showObj (Node a l r) = unwords ["(Node", show a, show l, show r ++ ")"]
+
+
+--
+-- * Plain Types
+--
+
+newtype Fix f = Fix { unFix :: f (Fix f) }
+
+type None'   = Fix None
+type One'  a = Fix (One a)
+type List' a = Fix (List a)
+type Tree' a = Fix (Tree a)
+
+none :: None'
+none = Fix None
+
+one :: a -> One' a
+one = Fix . One
+
+nil :: List' a
+nil = Fix Nil
+
+cons :: a -> List' a -> List' a
+cons a l = Fix (Cons a l)
+
+leaf :: a -> Tree' a
+leaf = Fix . Leaf
+
+node :: a -> Tree' a -> Tree' a -> Tree' a
+node a l r = Fix (Node a l r)
