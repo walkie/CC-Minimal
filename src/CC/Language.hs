@@ -20,7 +20,7 @@ data CC t e =
   | Chc t (CC t e) (CC t e)
 
 class Obj e where
-  mapCC   :: (CC t e -> CC t e) -> e (CC t e) -> e (CC t e)
+  mapCC   :: (CC t e -> b) -> e (CC t e) -> e b
   foldCC  :: (CC t e -> b -> b) -> b -> e (CC t e) -> b
   showObj :: Show t => e (CC t e) -> String
 

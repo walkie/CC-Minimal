@@ -11,17 +11,17 @@ data One a b = One a
   deriving Eq
 
 instance Show a => Obj (One a) where
-  mapCC   _       = id
-  foldCC  _ b     = const b
-  showObj (One a) = show a
+  mapCC   _ (One a) = One a
+  foldCC  _ b       = const b
+  showObj   (One a) = show a
 
 data None b = None
   deriving Eq
 
 instance Obj None where
-  mapCC   _   = id
+  mapCC   _ _ = None
   foldCC  _ b = const b
-  showObj _   = "_"
+  showObj   _ = "_"
 
 data List a e =
     Nil
@@ -31,7 +31,7 @@ data List a e =
 instance Show a => Obj (List a) where
   
   mapCC f (Cons a e) = Cons a (f e)
-  mapCC _ n          = n
+  mapCC _ Nil        = Nil
   
   foldCC _ b Nil        = b
   foldCC f b (Cons _ e) = f e b
@@ -47,7 +47,7 @@ data Tree a e =
 instance Show a => Obj (Tree a) where
   
   mapCC f (Node a l r) = Node a (f l) (f r)
-  mapCC _ l            = l
+  mapCC _ (Leaf a)     = Leaf a
   
   foldCC _ b (Leaf _)     = b
   foldCC f b (Node _ l r) = f r (f l b)
