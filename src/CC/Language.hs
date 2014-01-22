@@ -1,6 +1,8 @@
 
 module CC.Language where
 
+import Data.List (transpose)
+
 import Data.Map (Map)
 import qualified Data.Map as Map
 
@@ -54,6 +56,11 @@ class Tag t where
 options :: (Tag t, Obj e) => CC t e -> Set Option
 options (Obj e) = foldCC (Set.union . options) Set.empty e
 options (Chc t l r) = Set.unions [tagOpts t, options l, options r]
+
+-- | All configurations of an expression.
+configs :: (Tag t, Obj e) => CC t e -> [Config]
+configs e = (map Map.fromList . transpose) [[(o,True),(o,False)] | o <- os]
+  where os = Set.toList (options e)
 
 -- | Apply a (potentially partial) configuration to an expression.
 configure :: (Tag t, Obj e) => Config -> CC t e -> CC t e
