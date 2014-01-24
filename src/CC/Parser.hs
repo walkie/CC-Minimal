@@ -12,6 +12,7 @@ import Text.Parsec.String
 import qualified Text.Parsec.Token as Lex
 
 import CC.Language
+import CC.Object
 
 
 --
@@ -90,3 +91,39 @@ parseConfig = fmap Map.fromList (parseSetting `sepBy` comma)
 
 readCC :: (TagP t, ObjP e) => String -> CC t e
 readCC = runParser parseCC
+
+
+--
+-- * Object Language Parsers
+--
+
+-- Some atomic value types.
+
+instance Parse () where
+  parseIt = symbol "()" >> return ()
+
+instance Parse Int where
+  parseIt = fmap fromInteger integer
+
+-- Object languages
+
+instance ObjP None where
+  parseObj = symbol "_" >> return None
+
+instance (Show a, Parse a) => ObjP (One a) where
+  parseObj = fmap One parseIt
+
+instance (Show a, Parse a) => ObjP (List a) where
+  parseObj = (symbol "[]" >> return Nil)
+         <|> do h <- parseIt
+                symbol ":"
+                t <- parseIt
+                return (Cons h t)
+
+instance (Show a, Parse a) => ObjP (Tree a) where
+  parseObj = parens (do symbol "Node"
+                        a <- parseIt
+                        l <- parseIt
+                        r <- parseIt
+                        return (Node a l r))
+         <|> fmap Leaf parseIt
