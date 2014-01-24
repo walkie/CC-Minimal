@@ -9,8 +9,6 @@ import qualified Data.Map as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-import Text.Parsec.String (Parser)
-
 
 --
 -- * Syntax
@@ -25,7 +23,6 @@ class Obj e where
   mapCC    :: (CC t e -> a) -> e (CC t e) -> e a
   foldCC   :: (CC t e -> a -> a) -> a -> e (CC t e) -> a
   showObj  :: Tag t => e (CC t e) -> String
-  parseObj :: Parser (e a)
 
 showCC :: (Tag t, Obj e) => CC t e -> String
 showCC (Obj e)     = showObj e
@@ -59,7 +56,6 @@ class Tag t where
   tagOpts  :: t -> Set Option
   resolve  :: Config -> t -> Either t Bool
   showTag  :: t -> String
-  parseTag :: Parser t
 
 -- | The set of all configuration options referred to in an expression.
 options :: (Tag t, Obj e) => CC t e -> Set Option
