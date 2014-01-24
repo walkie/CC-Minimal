@@ -51,7 +51,7 @@ class (Parse t, Tag t) => TagP t where
 
 -- | Extend Obj with parse method.
 class Obj e => ObjP e where
-  parseObj :: Parser (e a)
+  parseObj :: Parse a => Parser (e a)
 
 -- | Parse a choice calculus expression.
 parseCC :: (TagP t, ObjP e) => Parser (CC t e)
