@@ -7,7 +7,20 @@ import CC.Language
 -- * Some Simple Object Languages
 --
 
-data One a b = One a
+-- ** Empty/unit values
+
+data None e = None
+  deriving Eq
+
+instance Obj None where
+  mapCC   _ _ = None
+  foldCC  _ b = const b
+  showObj   _ = "_"
+
+
+-- ** Atomic values
+
+data One a e = One a
   deriving Eq
 
 instance Show a => Obj (One a) where
@@ -15,13 +28,8 @@ instance Show a => Obj (One a) where
   foldCC  _ b       = const b
   showObj   (One a) = show a
 
-data None b = None
-  deriving Eq
 
-instance Obj None where
-  mapCC   _ _ = None
-  foldCC  _ b = const b
-  showObj   _ = "_"
+-- ** Lists
 
 data List a e =
     Nil
@@ -38,6 +46,9 @@ instance Show a => Obj (List a) where
   
   showObj Nil        = "[]"
   showObj (Cons a e) = show a ++ ":" ++ show e
+
+
+-- ** Binary trees
 
 data Tree a e =
     Leaf a
