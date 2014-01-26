@@ -76,6 +76,8 @@ type One'  a = Fix (One a)
 type List' a = Fix (List a)
 type Tree' a = Fix (Tree a)
 
+-- ** Smart constructors
+
 none :: None'
 none = Fix None
 
@@ -87,6 +89,13 @@ nil = Fix Nil
 
 cons :: a -> List' a -> List' a
 cons a l = Fix (Cons a l)
+
+fromList :: [a] -> List' a
+fromList = foldr cons nil
+
+toList :: List' a -> [a]
+toList (Fix Nil)        = []
+toList (Fix (Cons a e)) = a : toList e
 
 leaf :: a -> Tree' a
 leaf = Fix . Leaf
