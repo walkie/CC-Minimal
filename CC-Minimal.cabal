@@ -36,6 +36,8 @@ test-suite tests
     base,
     containers,
     parsec,
+    HUnit,
+    smallcheck,
     tasty,
     tasty-hunit,
     tasty-smallcheck
