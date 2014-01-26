@@ -1,0 +1,29 @@
+name:          CC-Minimal
+version:       0.0.0
+synopsis:      A simple and extensible representation of variation.
+homepage:      https://github.com/walkie/CC-Minimal
+bug-reports:   https://github.com/walkie/CC-Minimal
+license:       BSD3
+license-file:  LICENSE
+author:        Eric Walkingshaw
+maintainer:    eric@walkingshaw.net
+category:      Language
+build-type:    Simple
+cabal-version: >= 1.10
+
+source-repository head
+  type:     git
+  location: https://github.com/walkie/CC-Minimal.git
+  branch:   master
+
+library
+  hs-source-dirs: src
+  build-depends:
+    base >= 4.6,
+    containers >= 0.5,
+    parsec >= 3.1
+  default-language: Haskell2010
+  exposed-modules:
+    CC.Language,
+    CC.Object,
+    CC.Parser
