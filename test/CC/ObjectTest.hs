@@ -9,6 +9,9 @@ import Test.Tasty.TH
 
 import CC.Object
 
-prop_fromToList = forAll (\l -> l == toList (fromList (l :: [Int])))
+prop_fromToList = forAll fromToList
+  where
+    fromToList :: [Int] -> Bool
+    fromToList l = l == toList (fromList l)
 
 tests = $(testGroupGenerator)
