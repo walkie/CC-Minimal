@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 
 module CC.ObjectTest where
 
