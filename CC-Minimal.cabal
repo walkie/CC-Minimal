@@ -22,6 +22,7 @@ library
   build-depends:
     base >= 4.6,
     containers >= 0.5,
+    bifunctors >= 4.1,
     parsec >= 3.1
   exposed-modules:
     CC.Language,
@@ -35,6 +36,7 @@ test-suite tests
   build-depends:
     base,
     containers,
+    bifunctors,
     parsec,
     HUnit,
     smallcheck,
