@@ -107,50 +107,65 @@ readCC = runParser parseCC
 -- * Tag Parsers
 --
 
-instance Parse Dim where
-  parseIt = fmap Dim parseOption
+parseDim :: Parser Dim
+parseDim = fmap Dim parseOption
+  
+parseFormula :: Parser Formula
+parseFormula = buildExpressionParser table terms
+  where
+    terms = parens parseIt <|> fmap Con parseBool <|> fmap Opt parseOption
+    table = [[Prefix (op o Not)           | o <- ["¬","~"]],
+             [Infix  (op o And) AssocLeft | o <- ["∧","&"]],
+             [Infix  (op o Or ) AssocLeft | o <- ["v","|"]]]
+    op o c = symbol o >> return c
 
-instance Parse Formula where
-  parseIt = buildExpressionParser table terms
-    where
-      terms = parens parseIt <|> fmap Con parseBool <|> fmap Opt parseOption
-      table = [[Prefix (op o Not)           | o <- ["¬","~"]],
-               [Infix  (op o And) AssocLeft | o <- ["∧","&"]],
-               [Infix  (op o Or ) AssocLeft | o <- ["v","|"]]]
-      op o c = symbol o >> return c
+instance Parse Dim     where parseIt = parseDim
+instance Parse Formula where parseIt = parseFormula
 
 
 --
 -- * Object Language Parsers
 --
 
--- Some atomic value types.
+-- ** Some atomic value types.
 
-instance Parse () where
-  parseIt = symbol "()" >> return ()
+parseUnit :: Parser ()
+parseUnit = symbol "()" >> return ()
 
-instance Parse Int where
-  parseIt = fmap fromInteger integer
+parseInt :: Parser Int
+parseInt = fmap fromInteger integer
 
--- Object languages
+instance Parse ()  where parseIt = parseUnit
+instance Parse Int where parseIt = parseInt
+
+-- ** Object languages
+
+parseNone :: Parser (None e)
+parseNone = symbol "_" >> return None
+
+parseOne :: (Show a, Parse a) => Parser (One a e)
+parseOne = fmap One parseIt
+
+parseList :: (Show a, Parse a, Parse e) => Parser (List a e)
+parseList = (symbol "[]" >> return Nil)
+        <|> do h <- parseIt
+               symbol ":"
+               t <- parseIt
+               return (Cons h t)
+
+parseTree :: (Show a, Parse a, Parse e) => Parser (Tree a e)
+parseTree = parens (do symbol "Node"
+                       a <- parseIt
+                       l <- parseIt
+                       r <- parseIt
+                       return (Node a l r))
+        <|> fmap Leaf parseIt
 
 instance ObjP None where
-  parseObj = symbol "_" >> return None
-
+  parseObj = parseNone
 instance (Show a, Parse a) => ObjP (One a) where
-  parseObj = fmap One parseIt
-
+  parseObj = parseOne
 instance (Show a, Parse a) => ObjP (List a) where
-  parseObj = (symbol "[]" >> return Nil)
-         <|> do h <- parseIt
-                symbol ":"
-                t <- parseIt
-                return (Cons h t)
-
+  parseObj = parseList
 instance (Show a, Parse a) => ObjP (Tree a) where
-  parseObj = parens (do symbol "Node"
-                        a <- parseIt
-                        l <- parseIt
-                        r <- parseIt
-                        return (Node a l r))
-         <|> fmap Leaf parseIt
+  parseObj = parseTree
