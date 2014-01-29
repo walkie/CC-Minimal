@@ -24,6 +24,14 @@ class Obj e where
   foldCC   :: (CC t e -> a -> a) -> a -> e (CC t e) -> a
   showObj  :: Tag t => e (CC t e) -> String
 
+class Tag t where
+  -- | The configuration options referenced in this tag.
+  tagOpts :: t -> Set Option
+  -- | Resolve or simplify a tag given a configuration.
+  resolve :: Config -> t -> Either t Bool
+  -- | Pretty print a tag.
+  showTag :: t -> String
+
 showCC :: (Tag t, Obj e) => CC t e -> String
 showCC (Obj e)     = showObj e
 showCC (Chc t l r) = showTag t ++ "<" ++ showCC l ++ "," ++ showCC r ++ ">"
@@ -51,11 +59,6 @@ newtype Plain f = P { unP :: f (Plain f) }
 
 -- | Denotational semantics.
 type Semantics e = Map Config (Plain e)
-
-class Tag t where
-  tagOpts  :: t -> Set Option
-  resolve  :: Config -> t -> Either t Bool
-  showTag  :: t -> String
 
 -- | The set of all configuration options referred to in an expression.
 options :: (Tag t, Obj e) => CC t e -> Set Option
