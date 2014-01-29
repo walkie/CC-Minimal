@@ -7,12 +7,14 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 
 import Text.Parsec hiding (runParser)
+import Text.Parsec.Expr
 import Text.Parsec.Language (emptyDef)
 import Text.Parsec.String
 import qualified Text.Parsec.Token as Lex
 
 import CC.Language
 import CC.Object
+import CC.Tag
 
 
 --
@@ -32,10 +34,13 @@ class Parse a where
 -- * Lexer
 --
 
-lexer = Lex.makeTokenParser emptyDef
+lexer = Lex.makeTokenParser (emptyDef {
+    Lex.reservedNames = ["True","False"]
+  })
 
 parens     = Lex.parens     lexer
 comma      = Lex.comma      lexer
+reserved   = Lex.reserved   lexer
 identifier = Lex.identifier lexer
 integer    = Lex.integer    lexer
 symbol     = Lex.symbol     lexer
@@ -76,6 +81,11 @@ instance (TagP t, ObjP e) => Parse (CC t e) where
 parseOption :: Parser Option
 parseOption = identifier
 
+-- | Parse a boolean literal (used in formula tags).
+parseBool :: Parser Bool
+parseBool = (reserved "True"  >> return True) <|>
+            (reserved "False" >> return False)
+
 -- | Parse a configuration option setting ("opt.l" or "opt.r").
 parseSetting :: Parser Setting
 parseSetting = do
@@ -91,6 +101,23 @@ parseConfig = fmap Map.fromList (parseSetting `sepBy` comma)
 
 readCC :: (TagP t, ObjP e) => String -> CC t e
 readCC = runParser parseCC
+
+
+--
+-- * Tag Parsers
+--
+
+instance Parse Dim where
+  parseIt = fmap Dim parseOption
+
+instance Parse Formula where
+  parseIt = buildExpressionParser table terms
+    where
+      terms = parens parseIt <|> fmap Opt parseOption
+      table = [[Prefix (op o Not)           | o <- ["¬","~"]],
+               [Infix  (op o And) AssocLeft | o <- ["∧","&"]],
+               [Infix  (op o Or ) AssocLeft | o <- ["v","|"]]]
+      op o c = symbol o >> return c
 
 
 --
