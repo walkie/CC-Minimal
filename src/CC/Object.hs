@@ -71,34 +71,34 @@ instance Show a => Obj (Tree a) where
 -- * Plain Types
 --
 
-type None'   = Fix None
-type One'  a = Fix (One a)
-type List' a = Fix (List a)
-type Tree' a = Fix (Tree a)
+type None'   = Plain None
+type One'  a = Plain (One a)
+type List' a = Plain (List a)
+type Tree' a = Plain (Tree a)
 
 -- ** Smart constructors
 
 none :: None'
-none = Fix None
+none = P None
 
 one :: a -> One' a
-one = Fix . One
+one = P . One
 
 nil :: List' a
-nil = Fix Nil
+nil = P Nil
 
 cons :: a -> List' a -> List' a
-cons a l = Fix (Cons a l)
+cons a l = P (Cons a l)
 
 fromList :: [a] -> List' a
 fromList = foldr cons nil
 
 toList :: List' a -> [a]
-toList (Fix Nil)        = []
-toList (Fix (Cons a e)) = a : toList e
+toList (P Nil)        = []
+toList (P (Cons a e)) = a : toList e
 
 leaf :: a -> Tree' a
-leaf = Fix . Leaf
+leaf = P . Leaf
 
 node :: a -> Tree' a -> Tree' a -> Tree' a
-node a l r = Fix (Node a l r)
+node a l r = P (Node a l r)
