@@ -113,7 +113,7 @@ instance Parse Dim where
 instance Parse Formula where
   parseIt = buildExpressionParser table terms
     where
-      terms = parens parseIt <|> fmap Opt parseOption
+      terms = parens parseIt <|> fmap Con parseBool <|> fmap Opt parseOption
       table = [[Prefix (op o Not)           | o <- ["¬","~"]],
                [Infix  (op o And) AssocLeft | o <- ["∧","&"]],
                [Infix  (op o Or ) AssocLeft | o <- ["v","|"]]]
